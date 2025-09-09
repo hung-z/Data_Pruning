@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 ######################### Data Setting #########################
 parser.add_argument('--batch-size', type=int, default=256, metavar='N',
                     help='input batch size for training.')
-parser.add_argument('--dataset', type=str, default='cifar10', choices=['cifar10', 'cifar100', 'tiny', 'svhn', 'cinic10', 'tinyimagenet'])
+parser.add_argument('--dataset', type=str, choices=['cifar10', 'cifar100', 'tiny', 'svhn', 'cinic10', 'tinyimagenet'])
 
 ######################### Path Setting #########################
 parser.add_argument('--data-dir', type=str, default='../data/',
@@ -43,7 +43,7 @@ task_dir = os.path.join(args.base_dir, args.task_name)
 ckpt_path = os.path.join(task_dir, f'ckpt-last.pt')
 td_path = os.path.join(task_dir, f'td-{args.task_name}.pickle')
 data_score_path = os.path.join(task_dir, f'data-score-{args.task_name}.pickle')
-train_feature_path = os.path.join(task_dir, f'train-features-conv3-{args.task_name}.npy')
+train_feature_path = os.path.join(task_dir, f'train-features-{args.task_name}.npy')
 test_feature_path = os.path.join(task_dir, f'test-features-{args.task_name}.npy')
 
 

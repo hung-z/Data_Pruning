@@ -14,6 +14,8 @@ import queue
 matplotlib.use('Agg')
 
 def select_coreset(trainset, args):
+    # print("Coreset mode", args.coreset_mode)
+    # exit()
 
     total_num = len(trainset)
     # total samples to be selected for coreset
@@ -71,6 +73,8 @@ def select_coreset(trainset, args):
                                                               num=args.coreset_ratio * len(trainset))
 
     if args.coreset_mode == 'coreset':  # for baseline methods other than CCS
+        print("Coreset selection mode ...........................")
+        # exit()
         coreset_index = CoresetSelection.score_monotonic_selection(data_score=data_score, key=args.coreset_key,
                                                                    ratio=args.coreset_ratio,
                                                                    descending=(args.data_score_descending == 1),
@@ -159,6 +163,8 @@ def select_coreset(trainset, args):
             coreset_index, _ = CoresetSelection.stratified_sampling(data_score, coreset_num, args,
                                                                     data_embeds=features)
 
+        # print(len(coreset_index), coreset_num)
+        # exit()
         coreset_index_no_mis = np.array(coreset_index.copy())
         coreset_index = score_index[coreset_index]
 
@@ -212,11 +218,15 @@ def select_coreset(trainset, args):
         coreset_index = score_index[coreset_index]
 
     if args.coreset_mode == 'class':
+        # print("£££££££££££"*3)
+        # exit()
         mis_num = int(args.mis_ratio * total_num)
         data_score, score_index = CoresetSelection.mislabel_mask(data_score, mis_key=args.mis_key,
                                                                  mis_num=mis_num,
                                                                  mis_descending=args.mis_key in ['entropy', 'forgetting', 'el2n', 'ssl'],
                                                                  coreset_key=args.coreset_key)
+        # print("Coreset mode is class", score_index.shape, coreset_num)
+        # exit()
         coreset_num = int(args.coreset_ratio * total_num)
         if args.aucpr or (args.sampling_mode == 'graph' and not args.precomputed_dists and not args.precomputed_neighbors):
             assert args.feature_path
@@ -265,8 +275,13 @@ def select_coreset(trainset, args):
         coreset_index_no_mis = np.array(coreset_index.copy())
         coreset_index = score_index[coreset_index]
         graph_scores = sampling_method.starting_density
+    # print(type(coreset_index), coreset_index.shape, coreset_num)
+    # print(score_index.shape, coreset_index.shape, coreset_num)
+    # exit()
 
     if len(coreset_index) < coreset_num:
+        # print("Coreset size %s smaller than expected %s" % (len(coreset_index), coreset_num))
+        # exit()
         if score_index is not None:
             extra_sample_set = list(set(score_index.tolist()).difference(set(coreset_index.tolist())))
             coreset_index = np.hstack((coreset_index, np.array(random.sample(extra_sample_set,
@@ -274,12 +289,19 @@ def select_coreset(trainset, args):
                                                                                    coreset_num - len(coreset_index)))))))
             print("Added extra %s samples" %  int(min(len(extra_sample_set), coreset_num-len(coreset_index))))
             print(coreset_index.shape)
+        # exit()
+    if isinstance(coreset_index, np.ndarray):
+        coreset_index = torch.from_numpy(coreset_index).long()
+    # print(type(coreset_index), len(coreset_index), coreset_index.shape, coreset_num)
+    # print("Coreset size: %s, Coreset ratio: %s, coreset_num: %s" % (len(coreset_index), args.coreset_ratio, coreset_num))
+    # exit()
 
     # coreset_index = np.array(coreset_index.detach().cpu())
     trainset = torch.utils.data.Subset(trainset, coreset_index)
     print("Pruned %s samples in original train set to %s" % (total_num, len(trainset)))
 
-    out_file = '../data-pruning-analysis/%s_%s.png' % (args.dataset, args.task_name)
+    os.makedirs('./data-pruning-analysis', exist_ok=True)
+    out_file = './data-pruning-analysis/%s_%s.png' % (args.dataset, args.task_name)
 
     if args.coreset_mode == 'graph' and args.coreset_key == 'unity':
         entropy = plot_score_distribution(graph_scores, coreset_index_no_mis.astype(np.int32),
@@ -289,6 +311,7 @@ def select_coreset(trainset, args):
         # load data scores from training 100% data
         with open(args.data_score_path, 'rb') as f:
             data_score = pickle.load(f)
+        print(type(coreset_index))
         entropy = plot_score_distribution(data_score[args.coreset_key].numpy(), coreset_index.numpy().astype(np.int32), out_file,
                             args.stratas, args.coreset_key, args)
     return trainset, np.array(coreset_index), entropy
