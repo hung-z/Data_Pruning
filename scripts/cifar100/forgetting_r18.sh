@@ -1,8 +1,8 @@
 # Train model on full dataset to extract training dynamics
-# python train.py --dataset cifar100 --gpuid 1 --epochs 200 --lr 0.1 --network resnet18 --batch-size 256 --task-name all-data --base-dir ./data-model/cifar100
+python train.py --dataset cifar100 --gpuid 1 --epochs 200 --lr 0.1 --network resnet18 --batch-size 256 --task-name all-data --base-dir ./data-model/cifar100
 
 # Get importance scores and sample embeddings
-# python generate_importance_score.py --gpuid 1 --dataset cifar100 --base-dir ./data-model/cifar100 --task-name all-data --feature
+python generate_importance_score.py --gpuid 1 --dataset cifar100 --base-dir ./data-model/cifar100 --task-name all-data --feature
 
 # Select samples using D2 pruning and train ResNet 18 on the selected coreset
 #!/bin/bash
@@ -25,7 +25,7 @@ do
   # Execute the python training command
   # The $RATIO variable is used in the --task-name and --coreset-ratio arguments
   python train.py --dataset cifar100 --gpuid 1 --iterations 40000 \
-    --task-name forgetting-lb-graph-n=$N_NEIGHBOR-g=$GAMMA-$RATIO \
+    --task-name forgetting-$RATIO \
     --base-dir ./data-model/cifar100/forgetting/ \
     --coreset --coreset-mode coreset --budget-mode uniform --sampling-mode graph \
     --data-score-path ./data-model/cifar100/all-data/data-score-all-data.pickle \
@@ -33,11 +33,11 @@ do
     --coreset-key forgetting \
     --coreset-ratio $RATIO \
     --mis-ratio 0 \
-    --n-neighbor $N_NEIGHBOR \
-    --gamma $GAMMA \
-    --stratas 50 \
-    --graph-mode sum \
-    --graph-sampling-mode weighted
+    # --n-neighbor $N_NEIGHBOR \
+    # --gamma $GAMMA \
+    # --stratas 50 \
+    # --graph-mode sum \
+    # --graph-sampling-mode weighted
   
   echo "FINISHED RUN WITH CORESET_RATIO = $RATIO"
 done

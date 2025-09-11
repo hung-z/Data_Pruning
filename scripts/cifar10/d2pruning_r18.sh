@@ -1,18 +1,18 @@
 # Train model on full dataset to extract training dynamics
-# python train.py --dataset cifar100 --gpuid 1 --epochs 200 --lr 0.1 --network resnet18 --batch-size 256 --task-name all-data --base-dir ./data-model/cifar100
+python train.py --dataset cifar10 --gpuid 0 --epochs 200 --lr 0.1 --network resnet18 --batch-size 256 --task-name all-data --base-dir ./data-model/cifar10
 
 # Get importance scores and sample embeddings
-# python generate_importance_score.py --gpuid 1 --dataset cifar100 --base-dir ./data-model/cifar100 --task-name all-data --feature
+python generate_importance_score.py --gpuid 0 --dataset cifar10 --base-dir ./data-model/cifar10 --task-name all-data --feature
 
 # Select samples using D2 pruning and train ResNet 18 on the selected coreset
 #!/bin/bash
 
 # Set the constant parameters that don't change
-N_NEIGHBOR=15
-GAMMA=0.0
+N_NEIGHBOR=10
+GAMMA=0.8
 
 # Define the list of Corset Ratio values to iterate over
-CORESET_RATIOS=(0.1)
+CORESET_RATIOS=(0.5)
 
 # Loop through each ratio in the list
 for RATIO in "${CORESET_RATIOS[@]}"
@@ -24,12 +24,12 @@ do
 
   # Execute the python training command
   # The $RATIO variable is used in the --task-name and --coreset-ratio arguments
-  python train.py --dataset cifar100 --gpuid 0 --iterations 40000 \
+  python train.py --dataset cifar10 --gpuid 0 --iterations 40000 \
     --task-name class-lb-graph-n=$N_NEIGHBOR-g=$GAMMA-$RATIO \
-    --base-dir ./data-model/cifar100/stratified/ \
+    --base-dir ./data-model/cifar10/stratified/ \
     --coreset --coreset-mode stratified --budget-mode uniform --sampling-mode graph \
-    --data-score-path ./data-model/cifar100/all-data/data-score-all-data.pickle \
-    --feature-path ./data-model/cifar100/all-data/train-features-all-data.npy \
+    --data-score-path ./data-model/cifar10/all-data/data-score-all-data.pickle \
+    --feature-path ./data-model/cifar10/all-data/train-features-all-data.npy \
     --coreset-key forgetting \
     --coreset-ratio $RATIO \
     --mis-ratio 0.2 \
