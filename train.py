@@ -43,7 +43,7 @@ parser.add_argument('--task-name', type=str, default='tmp',
 ######################### Coreset Setting #########################
 parser.add_argument('--coreset', action='store_true', default=False)
 parser.add_argument('--coreset-only', action='store_true', default=False)
-parser.add_argument('--coreset-mode', type=str, choices=['random', 'coreset', 'stratified', 'density', 'class', 'graph'])
+parser.add_argument('--coreset-mode', type=str, choices=['random', 'coreset', 'stratified', 'density', 'class', 'graph', 'moderate'])
 parser.add_argument('--sampling-mode', type=str, choices=['kcenter', 'random', 'graph'])
 parser.add_argument('--budget-mode', type=str, choices=['uniform', 'density', 'confidence', 'aucpr'])
 
